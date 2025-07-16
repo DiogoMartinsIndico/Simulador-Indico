@@ -4,7 +4,7 @@ import pandas as pd
 # --- CONFIGURAÇÃO DA PÁGINA E ESTILO CUSTOMIZADO ---
 st.set_page_config(page_title="Dashboard Razonetes", layout="wide")
 
-# --- ESTILO CUSTOMIZADO (VERSÃO FINAL E CORRIGIDA) ---
+# --- ESTILO CUSTOMIZADO (VERSÃO FINAL COM REFINAMENTOS) ---
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=General+Sans:wght@400;600;700&display=swap' );
@@ -24,12 +24,12 @@ st.markdown("""
             font-weight: 700;
         }
         label {
-             color: #A0A0A0 !important;
+             color: #A0A0A0 !important; /* Rótulos dos inputs */
         }
 
         /* CONTAINERS E INPUTS */
         .st-emotion-cache-1r4qj8v {
-            background-color: #1e2130 !important;
+            background-color: #1e2130 !important; /* Fundo do expander */
         }
         .stTextInput input, .stNumberInput input {
             background-color: #2a2f45 !important;
@@ -38,27 +38,50 @@ st.markdown("""
             border-radius: 5px;
         }
         
-        /* ESTILO ESPECÍFICO E FORÇADO PARA TABELAS (st.table) */
+        /* --- MELHORIAS NOS ÍCONES DE AJUDA E TOOLTIPS --- */
+        /* Cor do ícone de ajuda (?) */
+        .st-emotion-cache-1x8cf18 svg {
+            fill: #A0A0A0 !important; /* Cinza claro, igual ao rótulo */
+        }
+        /* Estilo do Tooltip (caixa de ajuda que aparece no hover) */
+        .st-emotion-cache-1ghh1go {
+            background-color: #2a2f45 !important; /* Fundo escuro */
+            color: #FAFAFA !important; /* Texto branco */
+            border: 1px solid #4a5474 !important;
+            border-radius: 5px;
+        }
+
+        /* --- MELHORIAS NA TABELA --- */
         table {
             width: 100%;
-            background-color: #1e2130 !important; /* Fundo da tabela */
+            background-color: transparent !important; /* Fundo transparente para o container da tabela */
             color: #FAFAFA !important;
             border-radius: 10px;
-            overflow: hidden; /* Garante que o border-radius aplique nos cantos */
+            overflow: hidden;
+            border-collapse: separate; /* Necessário para o border-radius funcionar em tabelas */
+            border-spacing: 0;
         }
         th { /* Cabeçalho da tabela */
             background-color: #2a2f45 !important;
             color: #FAFAFA !important;
             font-weight: bold;
+            text-transform: uppercase; /* Deixa o texto em maiúsculas */
+            letter-spacing: 0.5px; /* Espaçamento entre as letras */
             text-align: left;
-            padding: 12px;
+            padding: 16px !important;
         }
         td { /* Células da tabela */
             background-color: #1e2130 !important;
             color: #FAFAFA !important;
-            padding: 12px;
-            border-top: 1px solid #2a2f45; /* Linha separadora entre as linhas */
+            padding: 16px !important;
+            border-top: 1px solid #2a2f45;
         }
+        /* Arredonda o canto superior esquerdo e direito do cabeçalho */
+        th:first-child { border-top-left-radius: 10px; }
+        th:last-child { border-top-right-radius: 10px; }
+        /* Arredonda o canto inferior esquerdo e direito da última linha */
+        tr:last-child td:first-child { border-bottom-left-radius: 10px; }
+        tr:last-child td:last-child { border-bottom-right-radius: 10px; }
         
         hr {
             border-color: #4a5474 !important;
@@ -174,11 +197,9 @@ df_simulador = pd.DataFrame({
     ]
 })
 
-# Remove o cabeçalho do índice do DataFrame para uma aparência mais limpa na tabela
 df_simulador.set_index('Parâmetro', inplace=True)
 
 with col2:
     st.markdown("<h3 style='text-align: center;'>Detalhamento Completo</h3>", unsafe_allow_html=True)
     
-    # Usando st.table para renderizar a tabela, que obedece melhor ao CSS
     st.table(df_simulador)

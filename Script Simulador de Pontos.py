@@ -3,77 +3,67 @@ import pandas as pd
 from io import BytesIO
 
 # --- CONFIGURAÇÃO DA PÁGINA E ESTILO CUSTOMIZADO ---
-# st.set_page_config deve ser o primeiro comando do Streamlit a ser executado.
 st.set_page_config(page_title="Dashboard Razonetes", layout="wide")
 
-# --- ESTILO CUSTOMIZADO (VERSÃO FINAL E MAIS ROBUSTA) ---
+# --- ESTILO CUSTOMIZADO (VERSÃO FINAL E CORRIGIDA) ---
 st.markdown("""
     <style>
-        /* Importa a fonte do Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=General+Sans:wght@400;600;700&display=swap' );
 
-        /* Cor de fundo principal e cor do texto padrão */
+        /* FUNDO E FONTE GERAL */
         .stApp, .main {
             background-color: #12141d !important;
             font-family: 'General Sans', sans-serif;
         }
 
-        /* Força a cor branca em texto geral, mas permite que seletores mais específicos (como labels) anulem */
+        /* TEXTOS */
         body, p, div, span, li {
-            color: #FAFAFA;
+            color: #FAFAFA !important;
         }
-
-        /* Cor dos cabeçalhos */
         h1, h2, h3, h4, h5, h6 {
             color: #FAFAFA !important;
-            font-family: 'General Sans', sans-serif;
             font-weight: 700;
         }
+        label {
+             color: #A0A0A0 !important;
+        }
 
-        /* Fundo do expander e outros containers */
-        .st-emotion-cache-1r4qj8v, .st-emotion-cache-1xw8zdv, .st-emotion-cache-1jicfl2 {
+        /* CONTAINERS E INPUTS */
+        .st-emotion-cache-1r4qj8v {
             background-color: #1e2130 !important;
         }
-        
-        /* Estilo para os inputs de texto e número (caixa de entrada) */
         .stTextInput input, .stNumberInput input {
             background-color: #2a2f45 !important;
             color: #FAFAFA !important;
             border: 1px solid #4a5474 !important;
-            border-radius: 5px; /* Borda arredondada para melhorar o visual */
+            border-radius: 5px;
         }
         
-        /* Força a cor do RÓTULO (label) dos inputs */
-        .st-emotion-cache-1qg05j4, label {
-             color: #A0A0A0 !important; /* Um cinza claro para o rótulo, para diferenciar do valor */
+        /* ESTILO ESPECÍFICO E FORÇADO PARA TABELAS (st.table) */
+        table {
+            width: 100%;
+            background-color: #1e2130 !important; /* Fundo da tabela */
+            color: #FAFAFA !important;
+            border-radius: 10px;
+            overflow: hidden; /* Garante que o border-radius aplique nos cantos */
         }
-
-        /* Estilo COMPLETO para o Dataframe */
-        .stDataFrame {
-            background-color: #1e2130 !important;
-            border-radius: 10px; /* Borda arredondada */
-        }
-        /* Cabeçalho do Dataframe */
-        .stDataFrame th {
+        th { /* Cabeçalho da tabela */
             background-color: #2a2f45 !important;
             color: #FAFAFA !important;
             font-weight: bold;
+            text-align: left;
+            padding: 12px !important;
         }
-        /* Células do Dataframe */
-        .stDataFrame td {
+        td { /* Células da tabela */
             background-color: #1e2130 !important;
             color: #FAFAFA !important;
-        }
-        /* Remove a borda branca ao redor do dataframe */
-        .st-emotion-cache-1vzeuhh {
-            border: none !important;
+            padding: 12px !important;
+            border-top: 1px solid #2a2f45; /* Linha separadora entre as linhas */
         }
         
-        /* Linha divisória horizontal */
         hr {
             border-color: #4a5474 !important;
         }
-
     </style>
 """, unsafe_allow_html=True)
 
@@ -81,7 +71,6 @@ st.markdown("""
 # --- Funções auxiliares ---
 def parse_input(input_str):
     try:
-        # Função mais robusta para lidar com diferentes formatos de entrada
         return float(str(input_str).replace(".", "").replace(",", "."))
     except (ValueError, TypeError):
         return 0.0
@@ -94,7 +83,110 @@ def format_number_br(value):
 # --- Layout do Simulador ---
 st.markdown("<h1 style='text-align: center;'>Simulador de Pontos Fidelidade</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; font-size: 16px; margin-top: -10px;'>Ajuste os parâmetros à esquerda para simular o impacto dos pontos na performance da loja.</p>", unsafe_allow_html=True)
-st.markdown("<hr style='margin-top:20px;margin-bottom:20px;'>", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
+
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    with st.expander("Editar Parâmetros da Simulação", expanded=True):
+        col_in1, col_in2 = st.columns(2)
+        with col_in1:
+            vendas_loja_input = st.text_input(
+                "Faturamento Total (R$)", value="0,00",
+                help="Total de vendas brutas da loja. Use ponto para milhar e vírgula paraCom certeza. Sem mais delongas, aqui está o script completo e final.
+
+Ele contém todas as correções, incluindo o CSS aprimorado e a troca do `st.dataframe` pelo `st.table` para garantir que a tabela também fique com o fundo escuro.
+
+Copie, cole e execute.
+
+```python
+import streamlit as st
+import pandas as pd
+from io import BytesIO
+
+# --- CONFIGURAÇÃO DA PÁGINA E ESTILO CUSTOMIZADO ---
+# st.set_page_config deve ser o primeiro comando do Streamlit a ser executado.
+st.set_page_config(page_title="Dashboard Razonetes", layout="wide")
+
+# --- ESTILO CUSTOMIZADO (VERSÃO FINAL) ---
+st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=General+Sans:wght@400;600;700&display=swap' );
+
+        /* FUNDO E FONTE GERAL */
+        .stApp, .main {
+            background-color: #12141d !important;
+            font-family: 'General Sans', sans-serif;
+        }
+
+        /* TEXTOS */
+        body, p, div, span, li {
+            color: #FAFAFA !important;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #FAFAFA !important;
+            font-weight: 700;
+        }
+        label {
+             color: #A0A0A0 !important;
+        }
+
+        /* CONTAINERS E INPUTS */
+        .st-emotion-cache-1r4qj8v {
+            background-color: #1e2130 !important;
+        }
+        .stTextInput input, .stNumberInput input {
+            background-color: #2a2f45 !important;
+            color: #FAFAFA !important;
+            border: 1px solid #4a5474 !important;
+            border-radius: 5px;
+        }
+        
+        /* ESTILO ESPECÍFICO E FORÇADO PARA TABELAS (st.table) */
+        table {
+            width: 100%;
+            background-color: #1e2130 !important; /* Fundo da tabela */
+            color: #FAFAFA !important;
+            border-radius: 10px;
+            overflow: hidden; /* Garante que o border-radius aplique nos cantos */
+        }
+        th { /* Cabeçalho da tabela */
+            background-color: #2a2f45 !important;
+            color: #FAFAFA !important;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px;
+        }
+        td { /* Células da tabela */
+            background-color: #1e2130 !important;
+            color: #FAFAFA !important;
+            padding: 12px;
+            border-top: 1px solid #2a2f45; /* Linha separadora entre as linhas */
+        }
+        
+        hr {
+            border-color: #4a5474 !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
+# --- Funções auxiliares ---
+def parse_input(input_str):
+    try:
+        return float(str(input_str).replace(".", "").replace(",", "."))
+    except (ValueError, TypeError):
+        return 0.0
+
+def format_number_br(value):
+    if not isinstance(value, (int, float)):
+        return "0,00"
+    return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+# --- Layout do Simulador ---
+st.markdown("<h1 style='text-align: center;'>Simulador de Pontos Fidelidade</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 16px; margin-top: -10px;'>Ajuste os parâmetros à esquerda para simular o impacto dos pontos na performance da loja.</p>", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 1])
 
@@ -124,13 +216,11 @@ with col1:
                 help="Número de pontos dados a cada R$1 em vendas."
             )
         
-        # Conversão dos inputs para float/int
         vendas_loja = parse_input(vendas_loja_input)
         valor_produto = parse_input(valor_produto_input)
         pontos_necessarios = int(parse_input(pontos_necessarios_input))
         pontos_por_real = parse_input(pontos_por_real_input)
 
-        # Premissas
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<h5>Premissas</h5>", unsafe_allow_html=True)
         st.markdown(""" 
@@ -163,24 +253,11 @@ valor_pontos_provisionados = reais_identificados * valor_ponto_provisionado
 pontos_resgatados_loja = pontos_dados * pct_resgate_loja
 valor_por_ponto = valor_produto / pontos_necessarios if pontos_necessarios else 0
 
-total_resgatado_propria_loja = pontos_outras_lojas_resgatados_na_loja + (pontos_resgatados_loja * pct_resgatado_proprio)
-valor_pontos_dados_balde = reais_identificados * valor_por_ponto
 pontos_proprios_resgatados = pontos_resgatados_loja * pct_resgatado_proprio
-valor_pontos_resgatados_balde = pontos_proprios_resgatados * valor_por_ponto
-saldo_1 = valor_pontos_dados_balde - valor_pontos_resgatados_balde
-
 reembolso_outras_lojas = pontos_outras_lojas_resgatados_na_loja * valor_por_ponto
-saldo_2 = saldo_1 + reembolso_outras_lojas
-
-pontos_loja_resgatados_fora = pontos_resgatados_loja * pct_resgatado_fora
-custo_resgate_fora = pontos_loja_resgatados_fora * valor_por_ponto
-
-saldo_3 = saldo_2 - custo_resgate_fora
-saldo_4 = saldo_3 * (1 - breakage)
-
+custo_resgate_fora = (pontos_resgatados_loja * pct_resgatado_fora) * valor_por_ponto
 net_loja = reembolso_outras_lojas - custo_resgate_fora
-valor_pontos_provisionados_resgatados = pontos_resgatados_loja * valor_por_ponto
-ganho_tributario = valor_pontos_provisionados_resgatados * carga_tributaria
+ganho_tributario = (pontos_resgatados_loja * valor_por_ponto) * carga_tributaria
 lift_aplicado = lift * reais_identificados
 ganho_programa = net_loja + lift_aplicado + ganho_tributario
 ganho_pct_final = (ganho_programa / vendas_loja) * 100 if vendas_loja else 0
@@ -201,6 +278,11 @@ df_simulador = pd.DataFrame({
     ]
 })
 
+# Remove o cabeçalho do índice do DataFrame para uma aparência mais limpa na tabela
+df_simulador.set_index('Parâmetro', inplace=True)
+
 with col2:
     st.markdown("<h3 style='text-align: center;'>Detalhamento Completo</h3>", unsafe_allow_html=True)
-    st.dataframe(df_simulador, use_container_width=True, hide_index=True)
+    
+    # Usando st.table para renderizar a tabela, que obedece melhor ao CSS
+    st.table(df_simulador)

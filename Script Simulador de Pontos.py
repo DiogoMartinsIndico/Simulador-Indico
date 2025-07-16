@@ -6,18 +6,21 @@ from io import BytesIO
 # st.set_page_config deve ser o primeiro comando do Streamlit a ser executado.
 st.set_page_config(page_title="Dashboard Razonetes", layout="wide")
 
-# CSS aprimorado para forçar um modo escuro completo e consistente
-# Cobre fundo, texto, inputs, botões, expanders e dataframes.
+# --- ESTILO CUSTOMIZADO (VERSÃO FINAL E MAIS ROBUSTA) ---
 st.markdown("""
     <style>
         /* Importa a fonte do Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=General+Sans:wght@400;600;700&display=swap' );
 
-        /* Cor de fundo principal e cor do texto */
+        /* Cor de fundo principal e cor do texto padrão */
         .stApp, .main {
             background-color: #12141d !important;
-            color: #FAFAFA !important;
             font-family: 'General Sans', sans-serif;
+        }
+
+        /* Força a cor branca em texto geral, mas permite que seletores mais específicos (como labels) anulem */
+        body, p, div, span, li {
+            color: #FAFAFA;
         }
 
         /* Cor dos cabeçalhos */
@@ -27,38 +30,48 @@ st.markdown("""
             font-weight: 700;
         }
 
-        /* Cor de fundo de containers, como o expander */
+        /* Fundo do expander e outros containers */
         .st-emotion-cache-1r4qj8v, .st-emotion-cache-1xw8zdv, .st-emotion-cache-1jicfl2 {
             background-color: #1e2130 !important;
         }
         
-        /* Estilo para os inputs de texto e número */
+        /* Estilo para os inputs de texto e número (caixa de entrada) */
         .stTextInput input, .stNumberInput input {
             background-color: #2a2f45 !important;
             color: #FAFAFA !important;
-            border: 1px solid #4a5474;
-        }
-
-        /* Estilo para o Dataframe */
-        .stDataFrame {
-            background-color: #1e2130 !important;
-        }
-        .stDataFrame a {
-            color: #8ab4f8 !important; /* Cor para links dentro do dataframe */
-        }
-        .stDataFrame th, .stDataFrame td {
-            color: #FAFAFA !important;
-            background-color: #1e2130 !important;
+            border: 1px solid #4a5474 !important;
+            border-radius: 5px; /* Borda arredondada para melhorar o visual */
         }
         
+        /* Força a cor do RÓTULO (label) dos inputs */
+        .st-emotion-cache-1qg05j4, label {
+             color: #A0A0A0 !important; /* Um cinza claro para o rótulo, para diferenciar do valor */
+        }
+
+        /* Estilo COMPLETO para o Dataframe */
+        .stDataFrame {
+            background-color: #1e2130 !important;
+            border-radius: 10px; /* Borda arredondada */
+        }
+        /* Cabeçalho do Dataframe */
+        .stDataFrame th {
+            background-color: #2a2f45 !important;
+            color: #FAFAFA !important;
+            font-weight: bold;
+        }
+        /* Células do Dataframe */
+        .stDataFrame td {
+            background-color: #1e2130 !important;
+            color: #FAFAFA !important;
+        }
         /* Remove a borda branca ao redor do dataframe */
         .st-emotion-cache-1vzeuhh {
             border: none !important;
         }
-
-        /* Cor do texto dentro dos expanders */
-        .st-emotion-cache-1dxs64q {
-            color: #FAFAFA !important;
+        
+        /* Linha divisória horizontal */
+        hr {
+            border-color: #4a5474 !important;
         }
 
     </style>
@@ -81,7 +94,7 @@ def format_number_br(value):
 # --- Layout do Simulador ---
 st.markdown("<h1 style='text-align: center;'>Simulador de Pontos Fidelidade</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; font-size: 16px; margin-top: -10px;'>Ajuste os parâmetros à esquerda para simular o impacto dos pontos na performance da loja.</p>", unsafe_allow_html=True)
-st.markdown("<hr style='margin-top:20px;margin-bottom:20px; border-color: #4a5474;'>", unsafe_allow_html=True)
+st.markdown("<hr style='margin-top:20px;margin-bottom:20px;'>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 1])
 
@@ -191,4 +204,3 @@ df_simulador = pd.DataFrame({
 with col2:
     st.markdown("<h3 style='text-align: center;'>Detalhamento Completo</h3>", unsafe_allow_html=True)
     st.dataframe(df_simulador, use_container_width=True, hide_index=True)
-

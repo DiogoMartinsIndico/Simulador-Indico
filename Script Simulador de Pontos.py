@@ -45,11 +45,7 @@ def parse_input(input_str):
 def format_number_br(value):
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# --- Simulador ---
-st.markdown("<h1 style='text-align: center;'>Simulador de Pontos Fidelidade</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 16px; margin-top: -10px;'>Ajuste os parâmetros à esquerda para simular o impacto dos pontos na performance da loja.</p>", unsafe_allow_html=True)
-st.markdown("<hr style='margin-top:20px;margin-bottom:20px;'>", unsafe_allow_html=True)
-
+# --- Simulador
 col1, col2 = st.columns([1, 1])
 
 with col1:

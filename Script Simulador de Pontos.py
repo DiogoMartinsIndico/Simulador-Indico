@@ -174,11 +174,10 @@ STREAMLIT_HELP_ICON_SVG = """
 # MUDANÇA AQUI: expanded=False
 with st.expander("Sobre o Simulador de Ganhos", expanded=False):
     st.markdown("""
-    **Simulador de Ganhos com Programa de Pontos**
     Este simulador foi criado para mostrar como um programa de fidelidade pode gerar ganhos financeiros, aumentar as vendas e oferecer benefícios fiscais.
 
     **Por que usar?**
-    * Fideliza clientes e incentiva a recompra.
+    * Identifica oportunidades de otimização no relacionamento com o cliente.
     * Ajuda na tomada de decisões estratégicas.
     * Simula o ROI do programa, mostrando o impacto no faturamento.
 
@@ -189,6 +188,8 @@ with st.expander("Sobre o Simulador de Ganhos", expanded=False):
         * Ganho Tributário
         * Lift nas vendas
         * Ganho total e % do programa
+    
+    OBS: Passe o mouse sobre os campos para ver explicações sobre premissas e parâmetros.
 
     **Benefícios principais**
     * Projeção de ganhos.

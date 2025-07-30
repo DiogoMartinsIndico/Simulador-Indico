@@ -172,7 +172,7 @@ STREAMLIT_HELP_ICON_SVG = """
 
 # --- NOVO: Adicionar a introdução dentro de um st.expander (versão concisa)
 # MUDANÇA AQUI: expanded=False
-with st.expander("Sobre o Simulador de Ganhos", expanded=False):
+with st.expander("Sobre o Simulador de Pontos", expanded=False):
     st.markdown("""
     Este simulador foi criado para mostrar como um programa de fidelidade pode gerar ganhos financeiros, aumentar as vendas e oferecer benefícios fiscais.
 

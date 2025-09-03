@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
+import re # Adicionado para expressões regulares
 
 st.set_page_config(page_title="Dashboard Razonetes", layout="wide")
 
@@ -50,7 +51,7 @@ st.markdown("""
         line-height: 1.2; 
     }
 
-    /* --- MUDANÇA AQUI: CSS PARA A NOSSA TABELA CUSTOMIZADA EM HTML --- */
+    /* CSS para a tabela customizada */
     .custom-table {
         width: 100%;
         border-collapse: collapse; 
@@ -60,7 +61,7 @@ st.markdown("""
         border-top: 1px solid black; 
         color: white; 
         vertical-align: middle; 
-        font-size: 14px; /* Adicionado para padronizar a fonte */
+        font-size: 14px;
     }
     .custom-table tr:first-child td {
         border-top: none; 
@@ -72,11 +73,28 @@ st.markdown("""
         color: white;
         border-color: #31333F;
     }
+
+    /* --- CÓDIGO ADICIONADO: Regras de CSS para o aviso --- */
+    
+    /* 1. Ajusta o PADDING (altura) do contêiner do alerta */
+    div[data-testid="stAlert"] {
+        padding: 0.5rem 1rem !important;
+    }
+
+    /* 2. Ajusta a FONTE e remove a margem do texto dentro do alerta */
+    div[data-testid="stAlert"] p {
+        font-size: 14px !important;
+        margin-bottom: 1 !important;
+    }
+
     </style>
 """, unsafe_allow_html=True)
 
-# Funções auxiliares
+# --- Funções auxiliares ---
 def parse_input(input_str):
+    # Função ajustada para ser mais robusta
+    if not isinstance(input_str, str) or not input_str:
+        return 0.0
     try:
         return float(str(input_str).replace(".", "").replace(",", "."))
     except (ValueError, TypeError):
@@ -84,6 +102,43 @@ def parse_input(input_str):
 
 def format_number_br(value):
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+# --- CÓDIGO ADICIONADO: INICIALIZAÇÃO DO SESSION_STATE ---
+if 'vendas_input' not in st.session_state:
+    st.session_state.vendas_input = ""
+if 'produto_input' not in st.session_state:
+    st.session_state.produto_input = ""
+if 'pontos_input' not in st.session_state:
+    st.session_state.pontos_input = ""
+if 'real_input' not in st.session_state:
+    st.session_state.real_input = ""
+if 'show_warning' not in st.session_state:
+    st.session_state.show_warning = False
+
+# --- CÓDIGO ADICIONADO: FUNÇÃO DE CALLBACK PARA LIMPEZA E AVISO ---
+def clean_and_warn():
+    vendas_antes = st.session_state.vendas_input
+    produto_antes = st.session_state.produto_input
+    pontos_antes = st.session_state.pontos_input
+    real_antes = st.session_state.real_input
+
+    vendas_depois = re.sub(r'[^0-9.,]', '', vendas_antes)
+    produto_depois = re.sub(r'[^0-9.,]', '', produto_antes)
+    pontos_depois = re.sub(r'[^0-9]', '', pontos_antes)
+    real_depois = re.sub(r'[^0-9.,]', '', real_antes)
+
+    st.session_state.vendas_input = vendas_depois
+    st.session_state.produto_input = produto_depois
+    st.session_state.pontos_input = pontos_depois
+    st.session_state.real_input = real_depois
+
+    if (vendas_antes != vendas_depois or
+        produto_antes != produto_depois or
+        pontos_antes != pontos_depois or
+        real_antes != real_depois):
+        st.session_state.show_warning = True
+    else:
+        st.session_state.show_warning = False
 
 # --- Seção de Introdução ---
 with st.expander("Sobre o Simulador de Pontos", expanded=False):
@@ -116,25 +171,27 @@ with st.expander("Sobre o Simulador de Pontos", expanded=False):
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    with st.expander("Editar Parâmetros da Simulação", expanded=True):
+    # --- ALTERAÇÃO PRINCIPAL: Usando st.container(border=True) para substituir o st.expander ---
+    with st.container(border=True):
+        st.markdown("<h3>Editar Parâmetros da Simulação</h3>", unsafe_allow_html=True)
+
         with st.container():
             col_in1, col_in2 = st.columns(2)
             with col_in1:
-                vendas_loja_input = st.text_input("Faturamento Bruto Total Anual (R$)", value="", help="Vendas Brutas Totais no Período Analisado")
-                vendas_loja = parse_input(vendas_loja_input)
+                st.text_input("Faturamento Bruto Total Anual (R$)", key='vendas_input', on_change=clean_and_warn, help="Vendas Brutas Totais no Período Analisado")
             with col_in2:
-                valor_produto_input = st.text_input("Preço Médio por Produto", value="", help="Utilize o preço de um item específico ou a média dos preços entre diferentes produtos")
-                valor_produto = parse_input(valor_produto_input)
+                st.text_input("Preço Médio por Produto", key='produto_input', on_change=clean_and_warn, help="Utilize o preço de um item específico ou a média dos preços entre diferentes produtos")
 
             col_in3, col_in4 = st.columns(2)
             with col_in3:
-                pontos_necessarios_input = st.text_input("Pontuação Mínima para Resgate", value="", help="Defina a quantidade mínima de pontos para resgatar um produto.")
-                pontos_necessarios = int(parse_input(pontos_necessarios_input))
+                st.text_input("Pontuação Mínima para Resgate", key='pontos_input', on_change=clean_and_warn, help="Defina a quantidade mínima de pontos para resgatar um produto.")
             with col_in4:
-                pontos_por_real_input = st.text_input("Pontos por Real R$", value="", help="Defina a quantidade de pontos atribuída a cada 1 real em vendas. Exemplo: 1 ponto para cada 1 real gasto.")
-                pontos_por_real = parse_input(pontos_por_real_input)
+                st.text_input("Pontos por Real R$", key='real_input', on_change=clean_and_warn, help="Defina a quantidade de pontos atribuída a cada 1 real em vendas. Exemplo: 1 ponto para cada 1 real gasto.")
 
-        # --- Premissas ---
+            if st.session_state.show_warning:
+                st.warning("Apenas números e caracteres monetários são permitidos. Caracteres inválidos foram removidos.")
+
+        # --- Premissas (dentro do mesmo contêiner com borda) ---
         st.markdown("<h3>Premissas</h3>", unsafe_allow_html=True)
         pct_vendas_identificadas_display = 35
         valor_ponto_provisionado_display = 5
@@ -147,6 +204,12 @@ with col1:
         st.markdown(f"""<div class="premise-block"><p class="premise-title">Lift: <span style='color: #2f0'>{lift_display:.2f}%</span></p><p class="premise-caption">Aumento percentual nas vendas gerado pelo programa de fidelidade.</p></div>""", unsafe_allow_html=True)
 
 # --- Cálculos ---
+# --- ALTERAÇÃO: Lendo os valores do session_state para os cálculos ---
+vendas_loja = parse_input(st.session_state.vendas_input)
+valor_produto = parse_input(st.session_state.produto_input)
+pontos_necessarios = int(parse_input(st.session_state.pontos_input) or 0)
+pontos_por_real = parse_input(st.session_state.real_input)
+
 pct_vendas_identificadas = pct_vendas_identificadas_display / 100.0
 valor_ponto_provisionado = valor_ponto_provisionado_display / 100.0
 pct_resgate_loja = pct_resgate_loja_display / 100.0
@@ -184,10 +247,7 @@ with col2:
     with st.container():
         st.markdown("<h3 style='text-align: center;'>Detalhamento Completo</h3>", unsafe_allow_html=True)
         
-        # Converte o DataFrame para uma string HTML
         tabela_html = df_simulador.to_html(header=False, index=False, escape=False, classes="custom-table")
-        
-        # Renderiza o HTML usando st.markdown
         st.markdown(tabela_html, unsafe_allow_html=True)
 
         with st.expander("Definições dos Termos"):

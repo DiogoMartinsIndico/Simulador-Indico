@@ -1,9 +1,24 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
-import re # Adicionado para expressões regulares
+import re
+import json # Adicionado para o Data Layer
 
 st.set_page_config(page_title="Dashboard Razonetes", layout="wide")
+
+# --- 1. INJEÇÃO DO SCRIPT DO GOOGLE TAG MANAGER ---
+GTM_ID = "GTM-569WGVK3" 
+
+st.markdown(f"""
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{'gtm.start':
+    new Date().getTime(),event:'gtm.js'}});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f );
+    }})(window,document,'script','dataLayer','{GTM_ID}');</script>
+    <!-- End Google Tag Manager -->
+    """, unsafe_allow_html=True)
+
 
 # --- CSS CUSTOMIZADO COM AJUSTE FINAL ---
 st.markdown("""
@@ -74,25 +89,21 @@ st.markdown("""
         border-color: #31333F;
     }
 
-    /* --- CÓDIGO ADICIONADO: Regras de CSS para o aviso --- */
-    
-    /* 1. Ajusta o PADDING (altura) do contêiner do alerta */
+    /* Regras de CSS para o aviso */
     div[data-testid="stAlert"] {
+        display: flex !important;
+        align-items: center !important;
         padding: 0.5rem 1rem !important;
     }
-
-    /* 2. Ajusta a FONTE e remove a margem do texto dentro do alerta */
     div[data-testid="stAlert"] p {
-        font-size: 14px !important;
-        margin-bottom: 1 !important;
+        font-size: 13px !important;
+        margin-bottom: 0 !important;
     }
-
     </style>
 """, unsafe_allow_html=True)
 
 # --- Funções auxiliares ---
 def parse_input(input_str):
-    # Função ajustada para ser mais robusta
     if not isinstance(input_str, str) or not input_str:
         return 0.0
     try:
@@ -103,7 +114,7 @@ def parse_input(input_str):
 def format_number_br(value):
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# --- CÓDIGO ADICIONADO: INICIALIZAÇÃO DO SESSION_STATE ---
+# --- INICIALIZAÇÃO DO SESSION_STATE ---
 if 'vendas_input' not in st.session_state:
     st.session_state.vendas_input = ""
 if 'produto_input' not in st.session_state:
@@ -114,8 +125,11 @@ if 'real_input' not in st.session_state:
     st.session_state.real_input = ""
 if 'show_warning' not in st.session_state:
     st.session_state.show_warning = False
+# Flag para garantir que o evento seja enviado apenas uma vez por conjunto de inputs
+if 'last_sent_inputs' not in st.session_state:
+    st.session_state.last_sent_inputs = None
 
-# --- CÓDIGO ADICIONADO: FUNÇÃO DE CALLBACK PARA LIMPEZA E AVISO ---
+# --- FUNÇÃO DE CALLBACK PARA LIMPEZA E AVISO ---
 def clean_and_warn():
     vendas_antes = st.session_state.vendas_input
     produto_antes = st.session_state.produto_input
@@ -144,12 +158,10 @@ def clean_and_warn():
 with st.expander("Sobre o Simulador de Pontos", expanded=False):
     st.markdown("""
     Este simulador foi criado para mostrar como um programa de fidelidade pode gerar ganhos financeiros, aumentar as vendas e oferecer benefícios fiscais.
-
     **Por que usar?**
     * Identifica oportunidades de otimização no relacionamento com o cliente.
     * Ajuda na tomada de decisões estratégicas.
     * Simula o ROI do programa, mostrando o impacto no faturamento.
-
     **Como usar?**
     1.  Preencha os dados do seu negócio (faturamento, preço médio, pontos por real, etc.).
     2.  Veja as premissas já configuradas (vendas identificadas, taxa de resgate, etc.).
@@ -157,9 +169,7 @@ with st.expander("Sobre o Simulador de Pontos", expanded=False):
         * Ganho Tributário
         * Lift nas vendas
         * Ganho total e % do programa
-    
     OBS: Passe o mouse sobre os campos para ver explicações sobre premissas e parâmetros.
-
     **Benefícios principais**
     * Projeção de ganhos.
     * Otimização do programa.
@@ -171,7 +181,6 @@ with st.expander("Sobre o Simulador de Pontos", expanded=False):
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    # --- ALTERAÇÃO PRINCIPAL: Usando st.container(border=True) para substituir o st.expander ---
     with st.container(border=True):
         st.markdown("<h3>Editar Parâmetros da Simulação</h3>", unsafe_allow_html=True)
 
@@ -191,7 +200,6 @@ with col1:
             if st.session_state.show_warning:
                 st.warning("Apenas números e caracteres monetários são permitidos. Caracteres inválidos foram removidos.")
 
-        # --- Premissas (dentro do mesmo contêiner com borda) ---
         st.markdown("<h3>Premissas</h3>", unsafe_allow_html=True)
         pct_vendas_identificadas_display = 35
         valor_ponto_provisionado_display = 5
@@ -204,7 +212,6 @@ with col1:
         st.markdown(f"""<div class="premise-block"><p class="premise-title">Lift: <span style='color: #2f0'>{lift_display:.2f}%</span></p><p class="premise-caption">Aumento percentual nas vendas gerado pelo programa de fidelidade.</p></div>""", unsafe_allow_html=True)
 
 # --- Cálculos ---
-# --- ALTERAÇÃO: Lendo os valores do session_state para os cálculos ---
 vendas_loja = parse_input(st.session_state.vendas_input)
 valor_produto = parse_input(st.session_state.produto_input)
 pontos_necessarios = int(parse_input(st.session_state.pontos_input) or 0)
@@ -229,6 +236,31 @@ receita_financeira = ((saldo_3 + saldo_4) / 2) * taxa_selic
 lift_aplicado = lift * reais_identificados
 ganho_programa = ganho_tributario + lift_aplicado + receita_financeira
 ganho_pct_final = ganho_programa / vendas_loja if vendas_loja else 0
+
+# --- 2. ENVIO DOS DADOS PARA O DATA LAYER ---
+# Verifica se os inputs essenciais foram preenchidos e se são diferentes do último envio
+current_inputs = (vendas_loja, valor_produto, pontos_necessarios, pontos_por_real)
+if all(current_inputs) and current_inputs != st.session_state.last_sent_inputs:
+    simulation_data = {
+        'event': 'simulation_calculated',
+        'faturamento_anual': vendas_loja,
+        'preco_medio_produto': valor_produto,
+        'pontos_resgate': pontos_necessarios,
+        'pontos_por_real': pontos_por_real,
+        'resultado_ganho_total': ganho_programa,
+        'resultado_ganho_percentual': ganho_pct_final * 100
+    }
+    simulation_data_json = json.dumps(simulation_data)
+    
+    st.markdown(f"""
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({simulation_data_json});
+        </script>
+        """, unsafe_allow_html=True)
+    
+    # Atualiza o último conjunto de inputs enviados para evitar envios duplicados
+    st.session_state.last_sent_inputs = current_inputs
 
 # --- Tabela de Resultados ---
 df_simulador = pd.DataFrame({

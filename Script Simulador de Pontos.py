@@ -128,6 +128,8 @@ if 'pontos_input' not in st.session_state:
     st.session_state.pontos_input = ""
 if 'real_input' not in st.session_state:
     st.session_state.real_input = ""
+if 'pct_resgate_loja_input' not in st.session_state:
+    st.session_state.pct_resgate_loja_input = ""
 if 'show_warning' not in st.session_state:
     st.session_state.show_warning = False
 
@@ -137,21 +139,25 @@ def clean_and_warn():
     produto_antes = st.session_state.produto_input
     pontos_antes = st.session_state.pontos_input
     real_antes = st.session_state.real_input
+    pct_resgate_loja_antes = st.session_state.pct_resgate_loja_input
 
     vendas_depois = re.sub(r'[^0-9.,]', '', vendas_antes)
     produto_depois = re.sub(r'[^0-9.,]', '', produto_antes)
     pontos_depois = re.sub(r'[^0-9]', '', pontos_antes)
     real_depois = re.sub(r'[^0-9.,]', '', real_antes)
+    pct_resgate_loja_depois = re.sub(r'[^0-9.,]', '', pct_resgate_loja_antes)
 
     st.session_state.vendas_input = vendas_depois
     st.session_state.produto_input = produto_depois
     st.session_state.pontos_input = pontos_depois
     st.session_state.real_input = real_depois
+    st.session_state.pct_resgate_loja_input = pct_resgate_loja_depois
 
     if (vendas_antes != vendas_depois or
         produto_antes != produto_depois or
         pontos_antes != pontos_depois or
-        real_antes != real_depois):
+        real_antes != real_depois or
+        pct_resgate_loja_antes != pct_resgate_loja_depois):
         st.session_state.show_warning = True
     else:
         st.session_state.show_warning = False
@@ -200,24 +206,26 @@ with col1:
 
             col_in3, col_in4 = st.columns(2)
             with col_in3:
-                st.text_input("Pontuação Mínima para Resgate", key='pontos_input', on_change=clean_and_warn, help="Defina a quantidade mínima de pontos para resgatar um produto.")
-            with col_in4:
-                st.text_input("Pontos por Real R$", key='real_input', on_change=clean_and_warn, help="Defina a quantidade de pontos atribuída a cada 1 real em vendas. Exemplo: 1 ponto para cada 1 real gasto.")
-
+              st.text_input("Pontuação Mínima para Resgate", key= 'pontos_input', on_change=clean_and_warn, help="Defina a quantidade mínima de pontos para resgatar um produto.")
+            with col_in4: 
+                st.text_input("Pontos da loja (%)", key= 'pct_resgate_loja_input', on_change=clean_and_warn, help="Defina o Percentual de pontos que os clientes efetivamente usaram para resgate.")
+            col_in5, col_in6 = st.columns(2)
+            with col_in5:
+                st.text_input("Pontos por Real R$", key= 'real_input', on_change=clean_and_warn, help="Defina a quantidade de pontos atribuída a cada 1 real em vendas. Exemplo: 1 ponto para cada 1 real gasto.")
             if st.session_state.show_warning:
                 st.warning("Apenas números e caracteres monetários são permitidos. Caracteres inválidos foram removidos.")
 
         # --- Premissas (dentro do mesmo contêiner com borda) ---
         st.markdown("<h3>Premissas</h3>", unsafe_allow_html=True)
-        pct_vendas_identificadas_display = 35
-        valor_ponto_provisionado_display = 5
-        pct_resgate_loja_display = 25
-        lift_display = 2.50
+        pct_vendas_identificadas_display = 35 # Mantido como premissa de input
+        valor_ponto_provisionado_display = 5 # Valor fixo de 0.05 * 100
+        lift_display = 2.50 # Valor fixo de 0.0250 * 100
         
-        st.markdown(f"""<div class="premise-block"><p class="premise-title">Vendas identificadas: <span style='color: #2f0'>{pct_vendas_identificadas_display}%</span></p><p class="premise-caption">Percentual de vendas onde o cliente foi identificado.</p></div>""", unsafe_allow_html=True)
-        st.markdown(f"""<div class="premise-block"><p class="premise-title">Valor do Ponto provisionado: <span style='color: #2f0'>{valor_ponto_provisionado_display}%</span></p><p class="premise-caption">Custo em reais que a empresa reserva para cada ponto distribuído.</p></div>""", unsafe_allow_html=True)
-        st.markdown(f"""<div class="premise-block"><p class="premise-title">Pontos da loja resgatados: <span style='color: #2f0'>{pct_resgate_loja_display}%</span></p><p class="premise-caption">Percentual de pontos que os clientes efetivamente usaram para resgate.</p></div>""", unsafe_allow_html=True)
-        st.markdown(f"""<div class="premise-block"><p class="premise-title">Lift: <span style='color: #2f0'>{lift_display:.2f}%</span></p><p class="premise-caption">Aumento percentual nas vendas gerado pelo programa de fidelidade.</p></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="premise-block"><p class="premise-title">Vendas identificadas: <span style=\'color: #2f0\'>{pct_vendas_identificadas_display}%</span></p><p class="premise-caption">Percentual de vendas onde o cliente foi identificado.</p></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="premise-block"><p class="premise-title">Valor do Ponto provisionado: <span style=\'color: #2f0\'>{valor_ponto_provisionado_display}%</span></p><p class="premise-caption">Custo em reais que a empresa reserva para cada ponto distribuído.</p></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="premise-block"><p class="premise-title">Lift: <span style=\'color: #2f0\'>{lift_display:.2f}%</span></p><p class="premise-caption">Aumento percentual nas vendas gerado pelo programa de fidelidade.</p></div>""", unsafe_allow_html=True)
+
+
 
 # --- Cálculos ---
 # --- ALTERAÇÃO: Lendo os valores do session_state para os cálculos ---
@@ -226,24 +234,44 @@ valor_produto = parse_input(st.session_state.produto_input)
 pontos_necessarios = int(parse_input(st.session_state.pontos_input) or 0)
 pontos_por_real = parse_input(st.session_state.real_input)
 
-pct_vendas_identificadas = pct_vendas_identificadas_display / 100.0
-valor_ponto_provisionado = valor_ponto_provisionado_display / 100.0
-pct_resgate_loja = pct_resgate_loja_display / 100.0
-lift = lift_display / 100.0
-reais_identificados = vendas_loja * pct_vendas_identificadas
+valor_ponto_provisionado = 0.05
+pct_resgate_loja = parse_input(st.session_state.pct_resgate_loja_input) / 100.0
+pct_resgatado_proprio = 0.65
+pct_resgatado_fora = 1 - pct_resgatado_proprio
+lift = 0.0250
+breakage = 1 - pct_resgate_loja
+
+reais_identificados = vendas_loja * pct_vendas_identificadas_display / 100.0
 pontos_dados = reais_identificados * pontos_por_real
 valor_pontos_provisionados = reais_identificados * valor_ponto_provisionado
 pontos_resgatados_loja = pontos_dados * pct_resgate_loja
 valor_por_ponto = valor_produto / pontos_necessarios if pontos_necessarios else 0
-carga_tributaria = 0.0965
+
+pontos_outras_lojas_resgatados_na_loja = 300_000.0
+carga_tributaria = 0.095
+
+total_resgatado_propria_loja = pontos_outras_lojas_resgatados_na_loja + (pontos_resgatados_loja * pct_resgatado_proprio)
 valor_pontos_dados_balde = reais_identificados * valor_por_ponto
-saldo_3 = valor_pontos_dados_balde
-saldo_4 = saldo_3 * pct_resgate_loja
-ganho_tributario = saldo_4 * carga_tributaria
-taxa_selic = 0.12
-receita_financeira = ((saldo_3 + saldo_4) / 2) * taxa_selic
+pontos_proprios_resgatados = pontos_resgatados_loja * pct_resgatado_proprio
+valor_pontos_resgatados_balde = pontos_proprios_resgatados * valor_por_ponto
+saldo_1 = valor_pontos_dados_balde - valor_pontos_resgatados_balde
+
+reembolso_outras_lojas = pontos_outras_lojas_resgatados_na_loja * valor_por_ponto
+saldo_2 = saldo_1 + reembolso_outras_lojas
+
+pontos_loja_resgatados_fora = pontos_resgatados_loja * pct_resgatado_fora
+custo_resgate_fora = pontos_loja_resgatados_fora * valor_por_ponto
+
+saldo_3 = saldo_2 - custo_resgate_fora
+saldo_4 = saldo_3 * (1 - breakage)
+
+net_loja = reembolso_outras_lojas - custo_resgate_fora
+
+valor_pontos_provisionados_resgatados = pontos_resgatados_loja * valor_por_ponto
+ganho_tributario = valor_pontos_provisionados_resgatados * carga_tributaria
+
 lift_aplicado = lift * reais_identificados
-ganho_programa = ganho_tributario + lift_aplicado + receita_financeira
+ganho_programa = net_loja + lift_aplicado + ganho_tributario
 ganho_pct_final = ganho_programa / vendas_loja if vendas_loja else 0
 
 # --- Tabela de Resultados ---
